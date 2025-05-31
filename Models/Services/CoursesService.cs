@@ -1,40 +1,21 @@
 ﻿using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Stepik.Models;
 
-namespace Stepik.Models.Services
+public class CoursesService
 {
-    public class CoursesService
+    /// <summary>
+    /// Получение списка курсов пользователя
+    /// </summary>
+    /// <param name="fullName">Полное имя пользователя</param>
+    /// <returns>List<Course></returns>
+    public static List<Course> Get(string fullName)
     {
-        public static int GetTotalCount()
-        {
-            string connections = Constant.ConnectionString;
+        var courses = new List<Course>();
 
-            using var connection = new  MySqlConnection(connections);
+        using var connection = new MySqlConnection(Constant.ConnectionString);
+        connection.Open();
 
-            connection.Open();
-
-            var query = @"SELECT COUNT(*) FROM courses";
-
-            using var command = new MySqlCommand(query, connection);
-
-            var courseCount = command.ExecuteScalar() ;
-
-            return courseCount != null ?  Convert.ToInt32(courseCount) : 0;
-        }
-
-        public static List<Course> Get(string fullName)
-        {
-            var courses = new List<Course>();
-
-            using var connection = new MySqlConnection(Constant.ConnectionString);
-            connection.Open();
-
-            var query = @"
+        var query = @"
             SELECT title, summary, photo
             FROM user_courses
             JOIN courses ON user_courses.course_id = courses.id
@@ -42,24 +23,38 @@ namespace Stepik.Models.Services
             WHERE users.full_name = @fullName AND users.is_active = 1
             ORDER BY user_courses.last_viewed DESC;";
 
-            using var command = new MySqlCommand(query, connection);
-            var fullNameParam = new MySqlParameter("@fullName", fullName);
-            command.Parameters.Add(fullNameParam);
+        using var command = new MySqlCommand(query, connection);
+        var fullNameParam = new MySqlParameter("@fullName", fullName);
+        command.Parameters.Add(fullNameParam);
 
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var course = new Course
             {
-                var course = new Course
-                {
-                    Title = reader.GetString(0),
-                    Summary = reader.IsDBNull(1) ? null : reader.GetString(1),
-                    Photo = reader.IsDBNull(2) ? null : reader.GetString(2)
-                };
-                courses.Add(course);
-            }
-
-            return courses;
+                Title = reader.GetString(0),
+                Summary = reader.IsDBNull(1) ? null : reader.GetString(1),
+                Photo = reader.IsDBNull(2) ? null : reader.GetString(2)
+            };
+            courses.Add(course);
         }
 
+        return courses;
+    }
+
+    /// <summary>
+    /// Получение общего количества курсов
+    /// </summary>
+    public static int GetTotalCount()
+    {
+        using var connection = new MySqlConnection(Constant.ConnectionString);
+        connection.Open();
+
+        var query = "SELECT COUNT(*) FROM courses;";
+
+        using var command = new MySqlCommand(query, connection);
+        var result = command.ExecuteScalar();
+
+        return result != null ? Convert.ToInt32(result) : 0;
     }
 }

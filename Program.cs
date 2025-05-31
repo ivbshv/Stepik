@@ -1,5 +1,4 @@
-﻿using Stepik.Models.Services;
-using Stepik.Models;
+﻿using Stepik.Models;
 
 public class Program
 {
@@ -131,7 +130,7 @@ public class Program
 
         User user = UsersService.Get(userName);
 
-        if (!string.IsNullOrEmpty(user?.FullName))
+        if (user != null)
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"Пользователь '{user.FullName}' успешно вошел.\n");
