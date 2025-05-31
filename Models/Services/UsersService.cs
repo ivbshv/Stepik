@@ -95,5 +95,21 @@ namespace Stepik.Models.Services
             }
 
         }
+
+        public static int GetTotalCount()
+        {
+            using var connection = new MySqlConnection(Constant.ConnectionString);
+
+            connection.Open();
+
+            string query = @"SELECT COUNT(*) FROM users";
+
+            using var command = new MySqlCommand(query, connection);
+
+            int usersCount = (int)command.ExecuteScalar();
+
+            return usersCount;
+
+        }
     }
 }
