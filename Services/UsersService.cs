@@ -125,4 +125,22 @@ public class UsersService
 
         return dataSet;
     }
+
+    public DataSet GetUserSocialInfo(string userName)
+    {
+        using var connection = new MySqlConnection(Constant.ConnectionString);
+        connection.Open();
+
+        var query = "CALL get_user_social_info(@user_name);";
+
+        using var command = new MySqlCommand(query,connection);
+        command.Parameters.AddWithValue("@user_name", userName);
+
+        var dataSet = new DataSet();
+
+        using var dataAdapter = new MySqlDataAdapter(command);
+        dataAdapter.Fill(dataSet);
+
+        return dataSet;
+    }
 }
